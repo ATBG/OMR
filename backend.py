@@ -21,6 +21,7 @@ def init_db():
             CREATE TABLE IF NOT EXISTS sessions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 created_at TEXT NOT NULL,
+                exam_name TEXT,
                 mcq_count INTEGER NOT NULL,
                 score REAL NOT NULL,
                 accuracy REAL NOT NULL,
@@ -31,6 +32,11 @@ def init_db():
             );
             """
         )
+        # Add missing columns for forward compatibility
+        try:
+            conn.execute("ALTER TABLE sessions ADD COLUMN exam_name TEXT;")
+        except sqlite3.OperationalError:
+            pass
         conn.commit()
 
 
@@ -47,7 +53,7 @@ def create_app():
     def list_sessions():
         with get_conn() as conn:
             rows = conn.execute(
-                "SELECT created_at, mcq_count, score, accuracy, avg_time, variance, streak, overtime_ratio "
+                "SELECT created_at, exam_name, mcq_count, score, accuracy, avg_time, variance, streak, overtime_ratio "
                 "FROM sessions ORDER BY id DESC LIMIT 100"
             ).fetchall()
         return jsonify([dict(r) for r in rows])
@@ -57,6 +63,7 @@ def create_app():
         data = request.get_json(force=True)
         required = [
             "mcqCount",
+            "examName",
             "score",
             "accuracy",
             "avgTime",
@@ -71,11 +78,12 @@ def create_app():
         with get_conn() as conn:
             conn.execute(
                 """
-                INSERT INTO sessions (created_at, mcq_count, score, accuracy, avg_time, variance, streak, overtime_ratio)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO sessions (created_at, exam_name, mcq_count, score, accuracy, avg_time, variance, streak, overtime_ratio)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     datetime.utcnow().isoformat(),
+                    data["examName"],
                     int(data["mcqCount"]),
                     float(data["score"]),
                     float(data["accuracy"]),

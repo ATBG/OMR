@@ -7,9 +7,10 @@
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&family=Chakra+Petch:wght@500;700&family=Sora:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
+  <canvas id="bgCanvas" class="bg-canvas" aria-hidden="true"></canvas>
   <div class="background-glow"></div>
   <header class="hero">
     <div>
@@ -31,6 +32,10 @@
       </div>
       <div class="grid form-grid">
         <label class="field">
+          <span>Exam Name</span>
+          <input id="examName" type="text" placeholder="e.g., Physics Mock 01" autocomplete="off" required>
+        </label>
+        <label class="field">
           <span>MCQ Count</span>
           <input id="mcqCount" type="number" min="1" max="200" value="20" required>
         </label>
@@ -46,13 +51,29 @@
           </div>
         </label>
         <label class="field answer-key">
-          <span>Answer Key (e.g., aabccbadddcaa)</span>
-          <input id="answerKey" type="text" placeholder="aabccbadddcaa" autocomplete="off">
+          <span>Answer Key</span>
+          <div class="key-row">
+            <input id="answerKey" type="text" placeholder="Use builder or paste e.g. aabccbadddcaa" autocomplete="off">
+            <button id="openKeyBuilder" type="button" class="ghost small">Open key sheet</button>
+          </div>
+          <div class="callout">
+            The answer key is the ground truth for this test. Enter the correct choices from your paper so the app can score your selections instantly and compute accuracy, streaks, and speed. It’s not shown during the exam—only used to grade what you mark.
+          </div>
+          <p class="hint desktop-only">Desktop: press Ctrl/Cmd + K or click “Open key sheet”, then type A/B/C/D; arrows/Enter move between rows, auto-advance after each letter.</p>
+          <p class="hint mobile-only">Phone: tap “Open key sheet”, type A/B/C/D for each numbered row; the cursor moves forward after each letter. Use the on-screen arrows to navigate if needed.</p>
         </label>
       </div>
       <div class="setup-actions">
         <button id="startBtn" class="primary">Arm Exam</button>
         <p class="hint">10s pre-start countdown. Hold an option 1s to lock. No edits after lock.</p>
+      </div>
+      <div class="hotkeys">
+        <span class="chip subtle">Tips</span>
+        <div class="tip-list">
+          <span>Ctrl/Cmd + K → Open answer key sheet</span>
+          <span>Arrow keys / Enter → Move between answer cells</span>
+          <span>Esc → Close key sheet</span>
+        </div>
       </div>
     </section>
 
@@ -94,6 +115,7 @@
       <div class="panel-header">
         <h2>Results</h2>
         <div class="chip success" id="scoreChip">Score: 0</div>
+        <div class="chip subtle" id="moodChip">Mood: —</div>
       </div>
       <div class="results-grid">
         <div>
@@ -125,7 +147,7 @@
       </div>
       <div class="history-table">
         <div class="history-row head">
-          <span>Date</span><span>MCQs</span><span>Score</span><span>Accuracy</span><span>Avg Time</span>
+          <span>Date</span><span>Exam</span><span>MCQs</span><span>Score</span><span>Accuracy</span><span>Avg Time</span>
         </div>
         <div id="historyBody"></div>
       </div>
@@ -137,6 +159,26 @@
       <p class="eyebrow">Starting in</p>
       <div id="countdownNum" class="countdown">10</div>
       <p>Hold steady — no inputs until the lights turn green.</p>
+    </div>
+  </div>
+
+  <div id="answerOverlay" class="overlay hidden">
+    <div class="overlay-card wide">
+      <div class="panel-header">
+        <h3>Fill Answer Key</h3>
+        <button id="closeKeyBuilder" class="ghost small" type="button">Close</button>
+      </div>
+      <p class="lede">Enter one letter per question (A/B/C/D). Rows match your MCQ count.</p>
+      <div class="shortcut-hints">
+        <span>Arrows / Enter to move</span>
+        <span>Auto-advance after typing</span>
+        <span>Esc to close</span>
+      </div>
+      <div id="answerGrid" class="answer-grid"></div>
+      <div class="dialog-actions">
+        <button id="applyKeyBuilder" class="primary" type="button">Apply Answers</button>
+        <button id="clearKeyBuilder" class="ghost" type="button">Clear</button>
+      </div>
     </div>
   </div>
 

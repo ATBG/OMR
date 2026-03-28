@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     created_at TEXT NOT NULL,
+    exam_name TEXT,
     mcq_count INTEGER NOT NULL,
     score REAL NOT NULL,
     accuracy REAL NOT NULL,
