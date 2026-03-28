@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital OMR Drill</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="background-glow"></div>
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Exam mode • Zero tolerance</p>
+      <h1>Digital OMR Drill</h1>
+      <p class="lede">Hold to mark, lock forever. Anime neon interface tuned for GitHub Pages with optional Flask stats backend.</p>
+    </div>
+    <div class="hero-actions">
+      <button id="exportCsvBtn" class="ghost" disabled>Export CSV</button>
+      <button id="exportJsonBtn" class="ghost" disabled>Export JSON</button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <section class="panel setup">
+      <div class="panel-header">
+        <h2>Setup</h2>
+        <span class="status-dot ready">Ready</span>
+      </div>
+      <div class="grid form-grid">
+        <label class="field">
+          <span>MCQ Count</span>
+          <input id="mcqCount" type="number" min="1" max="200" value="20" required>
+        </label>
+        <label class="field">
+          <span>Time per MCQ (sec)</span>
+          <input id="timePerMcq" type="number" min="5" max="600" value="45" required>
+        </label>
+        <label class="field switcher">
+          <span>Negative Marking</span>
+          <div class="toggle">
+            <input id="negativeMarking" type="checkbox">
+            <span class="slider"></span>
+          </div>
+        </label>
+        <label class="field answer-key">
+          <span>Answer Key (e.g., aabccbadddcaa)</span>
+          <input id="answerKey" type="text" placeholder="aabccbadddcaa" autocomplete="off">
+        </label>
+      </div>
+      <div class="setup-actions">
+        <button id="startBtn" class="primary">Arm Exam</button>
+        <p class="hint">10s pre-start countdown. Hold an option 1s to lock. No edits after lock.</p>
+      </div>
+    </section>
+
+    <section class="panel omr-shell">
+      <div class="panel-header">
+        <h2>OMR Sheet</h2>
+        <div class="chip" id="statusTag">Idle</div>
+      </div>
+      <div id="omrGrid" class="omr-grid empty-state">
+        <p>Configure and arm the exam to generate the OMR grid.</p>
+      </div>
+    </section>
+
+    <section class="panel bottom-bar">
+      <div class="timer-block">
+        <span class="label">Total Timer</span>
+        <div id="totalTimer" class="big-number">00:00</div>
+      </div>
+      <div class="timer-block">
+        <span class="label">Question Time</span>
+        <div id="questionTimer" class="big-number">00:00</div>
+      </div>
+      <div class="progress">
+        <div class="progress-meta">
+          <span>Progress</span>
+          <span id="progressText">0 / 0</span>
+        </div>
+        <div class="bar">
+          <div id="progressBar"></div>
+        </div>
+      </div>
+      <div class="state">
+        <span class="label">Mode</span>
+        <div id="modeLabel" class="chip subtle">Setup</div>
+      </div>
+    </section>
+
+    <section class="panel results" id="resultsPanel" hidden>
+      <div class="panel-header">
+        <h2>Results</h2>
+        <div class="chip success" id="scoreChip">Score: 0</div>
+      </div>
+      <div class="results-grid">
+        <div>
+          <h3>Valid Answers</h3>
+          <ul id="validList" class="answer-list"></ul>
+        </div>
+        <div>
+          <h3>Overtime Answers</h3>
+          <ul id="overtimeList" class="answer-list"></ul>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat-card"><span>Accuracy</span><strong id="accuracyStat">0%</strong></div>
+        <div class="stat-card"><span>Avg Time</span><strong id="avgTimeStat">0s</strong></div>
+        <div class="stat-card"><span>Speed Var</span><strong id="varianceStat">0</strong></div>
+        <div class="stat-card"><span>Longest Streak</span><strong id="streakStat">0</strong></div>
+        <div class="stat-card"><span>Overtime Ratio</span><strong id="overtimeStat">0%</strong></div>
+      </div>
+      <div class="actions">
+        <button id="saveSessionBtn" class="primary">Save Session</button>
+        <button id="resetBtn" class="ghost">Reset</button>
+      </div>
+    </section>
+
+    <section class="panel history" id="historyPanel">
+      <div class="panel-header">
+        <h2>Session History</h2>
+        <button id="clearHistoryBtn" class="ghost small">Clear</button>
+      </div>
+      <div class="history-table">
+        <div class="history-row head">
+          <span>Date</span><span>MCQs</span><span>Score</span><span>Accuracy</span><span>Avg Time</span>
+        </div>
+        <div id="historyBody"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="prestartOverlay" class="overlay hidden">
+    <div class="overlay-card">
+      <p class="eyebrow">Starting in</p>
+      <div id="countdownNum" class="countdown">10</div>
+      <p>Hold steady — no inputs until the lights turn green.</p>
+    </div>
+  </div>
+
+  <div id="endDialog" class="overlay hidden">
+    <div class="overlay-card">
+      <h3>Time's Up</h3>
+      <p>Continue to view results or give up to discard.</p>
+      <div class="dialog-actions">
+        <button id="continueBtn" class="primary">Continue</button>
+        <button id="giveUpBtn" class="ghost">Give up</button>
+      </div>
+    </div>
+  </div>
+
+  <template id="rowTemplate">
+    <div class="omr-row">
+      <span class="q-number"></span>
+      <div class="options">
+        <button class="option" data-choice="A">A</button>
+        <button class="option" data-choice="B">B</button>
+        <button class="option" data-choice="C">C</button>
+        <button class="option" data-choice="D">D</button>
+      </div>
+      <span class="lock-state">Unlocked</span>
+    </div>
+  </template>
+
+  <script>
+    // Optional: set your Flask backend origin here, e.g. "http://localhost:5000"
+    window.BACKEND_URL = "";
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>
