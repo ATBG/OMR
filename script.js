@@ -41,6 +41,18 @@
     applyKeyBuilder: document.getElementById("applyKeyBuilder"),
     clearKeyBuilder: document.getElementById("clearKeyBuilder"),
     closeKeyBuilder: document.getElementById("closeKeyBuilder"),
+    redoBtn: document.getElementById("redoBtn"),
+    comparisonPanel: document.getElementById("comparisonPanel"),
+    cmpScoreNow: document.getElementById("cmpScoreNow"),
+    cmpAccNow: document.getElementById("cmpAccNow"),
+    cmpTimeNow: document.getElementById("cmpTimeNow"),
+    cmpScorePrev: document.getElementById("cmpScorePrev"),
+    cmpAccPrev: document.getElementById("cmpAccPrev"),
+    cmpTimePrev: document.getElementById("cmpTimePrev"),
+    cmpLabelPrev: document.getElementById("cmpLabelPrev"),
+    saveExamBtn: document.getElementById("saveExamBtn"),
+    savedExamsBody: document.getElementById("savedExamsBody"),
+    clearExamsBtn: document.getElementById("clearExamsBtn"),
   };
 
   const state = {
@@ -61,9 +73,11 @@
     history: [],
     holdTimers: new Map(),
     holdRafs: new Map(),
+    savedExams: [],
   };
 
   const LOCAL_KEY = "omr-history";
+  const SAVED_EXAMS_KEY = "omr-saved-exams";
   const HOLD_MS = 1000;
   const BACKEND_URL = window.BACKEND_URL || null; // optional hook
   let bgCtx = null;
@@ -470,12 +484,15 @@
     els.validList.innerHTML = stats.valid
       .map(
         a =>
-          `<li>Q${a.number}: ${a.choice} - ${a.correct ? "Correct" : "Wrong"} - ${a.timeSpent}s</li>`
+          `<li><span>Q${a.number}</span><span>Your: ${a.choice}</span><span>Key: ${state.answerKey[a.number - 1]}</span></li>`
       )
       .join("");
 
     els.overtimeList.innerHTML = stats.overtime
-      .map(a => `<li>Q${a.number}: ${a.choice} - ${a.correct ? "Correct" : "Wrong"} - ${a.timeSpent}s</li>`)
+      .map(
+        a =>
+          `<li><span>Q${a.number}</span><span>Your: ${a.choice}</span><span>Key: ${state.answerKey[a.number - 1]}</span></li>`
+      )
       .join("");
 
     els.accuracyStat.textContent = `${stats.accuracy}%`;
@@ -486,6 +503,7 @@
     els.scoreChip.textContent = `Score: ${stats.score}`;
 
     applyMood(stats);
+    renderComparison(stats);
 
     els.resultsPanel.hidden = false;
     els.exportCsvBtn.disabled = false;
@@ -548,6 +566,27 @@
     );
   }
 
+  function renderComparison(currentStats) {
+    if (!els.comparisonPanel) return;
+    els.comparisonPanel.hidden = false;
+    els.cmpScoreNow.textContent = currentStats.score;
+    els.cmpAccNow.textContent = `${currentStats.accuracy}%`;
+    els.cmpTimeNow.textContent = `${currentStats.avgTime}s`;
+
+    const prev = state.history[0];
+    if (prev) {
+      els.cmpScorePrev.textContent = prev.score;
+      els.cmpAccPrev.textContent = `${prev.accuracy}%`;
+      els.cmpTimePrev.textContent = `${prev.avgTime}s`;
+      els.cmpLabelPrev.textContent = `Last saved: ${prev.date}${prev.examName ? " · " + prev.examName : ""}`;
+    } else {
+      els.cmpScorePrev.textContent = "–";
+      els.cmpAccPrev.textContent = "–";
+      els.cmpTimePrev.textContent = "–";
+      els.cmpLabelPrev.textContent = "No previous session yet.";
+    }
+  }
+
   function finishExam(timeUp = false) {
     if (state.finished) return;
     state.finished = true;
@@ -572,6 +611,7 @@
     els.progressBar.style.width = "0%";
     els.progressText.textContent = "0 / 0";
     els.resultsPanel.hidden = true;
+    if (els.comparisonPanel) els.comparisonPanel.hidden = true;
     els.omrGrid.classList.add("empty-state");
     els.omrGrid.innerHTML = "<p>Configure and arm the exam to generate the OMR grid.</p>";
     els.startBtn.disabled = false;
@@ -686,6 +726,16 @@
     renderHistory();
   }
 
+  function loadSavedExams() {
+    try {
+      const raw = localStorage.getItem(SAVED_EXAMS_KEY);
+      state.savedExams = raw ? JSON.parse(raw) : [];
+    } catch {
+      state.savedExams = [];
+    }
+    renderSavedExams();
+  }
+
   function saveHistory(session) {
     state.history.unshift(session);
     localStorage.setItem(LOCAL_KEY, JSON.stringify(state.history.slice(0, 50)));
@@ -719,6 +769,87 @@
     }
   }
 
+  function saveExamPreset() {
+    const preset = collectSetup();
+    if (!preset) return;
+    state.savedExams.unshift(preset);
+    state.savedExams = state.savedExams.slice(0, 50);
+    localStorage.setItem(SAVED_EXAMS_KEY, JSON.stringify(state.savedExams));
+    renderSavedExams();
+  }
+
+  function collectSetup() {
+    const name = els.examName.value.trim() || "Untitled Exam";
+    const mcq = parseInt(els.mcqCount.value, 10);
+    const t = parseInt(els.timePerMcq.value, 10);
+    const negative = els.negativeMarking.checked;
+    const key = els.answerKey.value.trim().toUpperCase();
+    if (!mcq || mcq <= 0 || !t || t <= 0) {
+      alert("Set MCQ count and time per MCQ to save an exam.");
+      return null;
+    }
+    if (!key || key.length !== mcq || ![...key].every(c => "ABCD".includes(c))) {
+      alert("Answer key must be A/B/C/D and match MCQ count.");
+      return null;
+    }
+    return { examName: name, mcqCount: mcq, timePerMcq: t, negativeMarking: negative, answerKey: key, savedAt: new Date().toLocaleString() };
+  }
+
+  function renderSavedExams() {
+    if (!els.savedExamsBody) return;
+    els.savedExamsBody.innerHTML = "";
+    if (!state.savedExams.length) {
+      els.savedExamsBody.innerHTML = `<p class="muted">No saved exams yet.</p>`;
+      return;
+    }
+    state.savedExams.forEach((ex, idx) => {
+      const card = document.createElement("div");
+      card.className = "saved-card";
+      card.innerHTML = `
+        <h4>${ex.examName}</h4>
+        <div class="saved-meta">MCQs: ${ex.mcqCount} • ${ex.timePerMcq}s each • ${ex.negativeMarking ? "Neg mark" : "No neg"} </div>
+        <div class="saved-meta">Saved: ${ex.savedAt}</div>
+        <div class="saved-actions">
+          <button class="primary small" data-idx="${idx}" data-action="load">Load</button>
+          <button class="ghost small" data-idx="${idx}" data-action="delete">Delete</button>
+        </div>
+      `;
+      card.querySelectorAll("button").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const action = btn.dataset.action;
+          if (action === "load") applyExamPreset(idx);
+          if (action === "delete") deleteExamPreset(idx);
+        });
+      });
+      els.savedExamsBody.appendChild(card);
+    });
+  }
+
+  function applyExamPreset(idx) {
+    const ex = state.savedExams[idx];
+    if (!ex) return;
+    els.examName.value = ex.examName;
+    els.mcqCount.value = ex.mcqCount;
+    els.timePerMcq.value = ex.timePerMcq;
+    els.negativeMarking.checked = ex.negativeMarking;
+    els.answerKey.value = ex.answerKey;
+    state.examName = ex.examName;
+    // reset and prepare grid to allow redo
+    resetExam();
+  }
+
+  function deleteExamPreset(idx) {
+    state.savedExams.splice(idx, 1);
+    localStorage.setItem(SAVED_EXAMS_KEY, JSON.stringify(state.savedExams));
+    renderSavedExams();
+  }
+
+  function clearSavedExams() {
+    state.savedExams = [];
+    localStorage.removeItem(SAVED_EXAMS_KEY);
+    renderSavedExams();
+  }
+
   async function syncHistoryFromBackend() {
     try {
       const res = await fetch(`${BACKEND_URL}/api/sessions`);
@@ -743,8 +874,10 @@
   }
 
   function handleSaveSession() {
-    if (!state.finished) return;
     const stats = state.lastStats || computeStats();
+    const nameInput = els.examName.value.trim();
+    if (!state.examName && nameInput) state.examName = nameInput;
+    if (!state.examName) state.examName = "Untitled Exam";
     const session = {
       examName: state.examName,
       date: new Date().toLocaleString(),
@@ -770,6 +903,7 @@
   els.giveUpBtn.addEventListener("click", handleGiveUp);
   els.resetBtn.addEventListener("click", resetExam);
   els.saveSessionBtn.addEventListener("click", handleSaveSession);
+  els.redoBtn.addEventListener("click", resetExam);
   els.clearHistoryBtn.addEventListener("click", clearHistory);
   els.exportCsvBtn.addEventListener("click", () => exportData("csv"));
   els.exportJsonBtn.addEventListener("click", () => exportData("json"));
@@ -777,10 +911,13 @@
   els.closeKeyBuilder.addEventListener("click", closeAnswerSheet);
   els.applyKeyBuilder.addEventListener("click", applyAnswerSheet);
   els.clearKeyBuilder.addEventListener("click", clearAnswerSheetInputs);
+  if (els.saveExamBtn) els.saveExamBtn.addEventListener("click", saveExamPreset);
+  if (els.clearExamsBtn) els.clearExamsBtn.addEventListener("click", clearSavedExams);
   document.addEventListener("keydown", handleGlobalKeys);
 
   (async () => {
     await loadHistory();
+    loadSavedExams();
     els.examName.focus();
     initBackground();
   })();

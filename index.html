@@ -55,6 +55,7 @@
           <div class="key-row">
             <input id="answerKey" type="text" placeholder="Use builder or paste e.g. aabccbadddcaa" autocomplete="off">
             <button id="openKeyBuilder" type="button" class="ghost small">Open key sheet</button>
+            <button id="saveExamBtn" type="button" class="ghost small">Save exam setup</button>
           </div>
           <div class="callout">
             The answer key is the ground truth for this test. Enter the correct choices from your paper so the app can score your selections instantly and compute accuracy, streaks, and speed. It’s not shown during the exam—only used to grade what you mark.
@@ -64,7 +65,7 @@
         </label>
       </div>
       <div class="setup-actions">
-        <button id="startBtn" class="primary">Start Exam</button>
+        <button id="startBtn" class="primary">Arm Exam</button>
         <p class="hint">10s pre-start countdown. Hold an option 1s to lock. No edits after lock.</p>
       </div>
       <div class="hotkeys">
@@ -134,9 +135,29 @@
         <div class="stat-card"><span>Longest Streak</span><strong id="streakStat">0</strong></div>
         <div class="stat-card"><span>Overtime Ratio</span><strong id="overtimeStat">0%</strong></div>
       </div>
+      <div class="comparison" id="comparisonPanel" hidden>
+        <div class="compare-card">
+          <p class="eyebrow">This Run</p>
+          <div class="compare-grid">
+            <span>Score</span><strong id="cmpScoreNow">0</strong>
+            <span>Accuracy</span><strong id="cmpAccNow">0%</strong>
+            <span>Avg Time</span><strong id="cmpTimeNow">0s</strong>
+          </div>
+        </div>
+        <div class="compare-card">
+          <p class="eyebrow">Previous</p>
+          <div class="compare-grid">
+            <span>Score</span><strong id="cmpScorePrev">–</strong>
+            <span>Accuracy</span><strong id="cmpAccPrev">–</strong>
+            <span>Avg Time</span><strong id="cmpTimePrev">–</strong>
+          </div>
+          <p class="hint" id="cmpLabelPrev"></p>
+        </div>
+      </div>
       <div class="actions">
         <button id="saveSessionBtn" class="primary">Save Session</button>
         <button id="resetBtn" class="ghost">Reset</button>
+        <button id="redoBtn" class="ghost">Redo Exam</button>
       </div>
     </section>
 
@@ -150,6 +171,16 @@
           <span>Date</span><span>Exam</span><span>MCQs</span><span>Score</span><span>Accuracy</span><span>Avg Time</span>
         </div>
         <div id="historyBody"></div>
+      </div>
+    </section>
+
+    <section class="panel saved-exams" id="savedExamsPanel">
+      <div class="panel-header">
+        <h2>Saved Exams</h2>
+        <button id="clearExamsBtn" class="ghost small">Clear</button>
+      </div>
+      <div class="saved-grid" id="savedExamsBody">
+        <p class="muted">No saved exams yet.</p>
       </div>
     </section>
   </main>
