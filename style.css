@@ -779,6 +779,9 @@ button:active:not(:disabled) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 10px;
+  max-height: 60vh;
+  overflow: auto;
+  padding-right: 6px;
 }
 
 .answer-item {

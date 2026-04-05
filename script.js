@@ -90,14 +90,16 @@
   }
 
   function parseAnswerKey(str, count) {
-    const letters = str.trim().toUpperCase().split("");
-    if (!letters.length) return [];
-    const filtered = letters.filter(l => ["A", "B", "C", "D"].includes(l));
-    if (filtered.length !== count) {
+    const letters = normalizeKey(str);
+    if (letters.length !== count) {
       alert("Answer key length must match MCQ count and only include A/B/C/D.");
       return [];
     }
-    return filtered;
+    return letters;
+  }
+
+  function normalizeKey(str) {
+    return (str.toUpperCase().match(/[ABCD]/g) || []);
   }
 
   function buildAnswerGrid(count) {
@@ -783,12 +785,12 @@
     const mcq = parseInt(els.mcqCount.value, 10);
     const t = parseInt(els.timePerMcq.value, 10);
     const negative = els.negativeMarking.checked;
-    const key = els.answerKey.value.trim().toUpperCase();
+    const key = normalizeKey(els.answerKey.value).join("");
     if (!mcq || mcq <= 0 || !t || t <= 0) {
       alert("Set MCQ count and time per MCQ to save an exam.");
       return null;
     }
-    if (!key || key.length !== mcq || ![...key].every(c => "ABCD".includes(c))) {
+    if (!key || key.length !== mcq) {
       alert("Answer key must be A/B/C/D and match MCQ count.");
       return null;
     }
