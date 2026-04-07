@@ -483,19 +483,16 @@
   function renderResults() {
     const stats = computeStats();
 
-    els.validList.innerHTML = stats.valid
-      .map(
-        a =>
-          `<li><span>Q${a.number}</span><span>Your: ${a.choice}</span><span>Key: ${state.answerKey[a.number - 1]}</span></li>`
-      )
-      .join("");
+    const renderListItems = answers =>
+      answers
+        .map(
+          a =>
+            `<li class="${a.correct ? "correct" : "wrong"}"><span>Q${a.number}</span><span>Your: ${a.choice}</span><span>Key: ${state.answerKey[a.number - 1]}</span></li>`
+        )
+        .join("");
 
-    els.overtimeList.innerHTML = stats.overtime
-      .map(
-        a =>
-          `<li><span>Q${a.number}</span><span>Your: ${a.choice}</span><span>Key: ${state.answerKey[a.number - 1]}</span></li>`
-      )
-      .join("");
+    els.validList.innerHTML = renderListItems(stats.valid);
+    els.overtimeList.innerHTML = renderListItems(stats.overtime);
 
     els.accuracyStat.textContent = `${stats.accuracy}%`;
     els.avgTimeStat.textContent = `${stats.avgTime}s`;
