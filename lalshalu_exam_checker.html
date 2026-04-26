@@ -8,7 +8,7 @@
     :root {
       --bg1: #07111f;
       --bg2: #0f172a;
-      --card: rgba(15, 23, 42, 0.72);
+      --card: rgba(15, 23, 42, 0.78);
       --text: #e5e7eb;
       --muted: #94a3b8;
       --accent: #60a5fa;
@@ -21,7 +21,6 @@
       --shadow-soft: 0 14px 28px rgba(0, 0, 0, 0.18);
       --radius-xl: 28px;
       --radius-lg: 22px;
-      --radius-md: 16px;
     }
 
     * { box-sizing: border-box; }
@@ -79,6 +78,25 @@
       to { transform: translate3d(18px, 24px, 0) scale(1.12); }
     }
 
+    @keyframes scorePop {
+      from { opacity: 0; transform: translateY(8px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes correctPulse {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.015); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes wrongShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-3px); }
+      40% { transform: translateX(3px); }
+      60% { transform: translateX(-2px); }
+      80% { transform: translateX(2px); }
+    }
+
     .wrap {
       width: min(100%, 1120px);
       margin: 0 auto;
@@ -89,7 +107,7 @@
     }
 
     .hero {
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(17, 24, 39, 0.86));
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(17, 24, 39, 0.90));
       border: 1px solid rgba(148, 163, 184, 0.18);
       border-radius: var(--radius-xl);
       padding: 18px;
@@ -113,12 +131,6 @@
       transform: translateY(-2px);
       border-color: rgba(96, 165, 250, 0.34);
       box-shadow: 0 24px 56px rgba(0, 0, 0, 0.38);
-    }
-
-    .sticky {
-      position: sticky;
-      top: 8px;
-      z-index: 20;
     }
 
     h1 {
@@ -187,7 +199,6 @@
       background: rgba(15, 23, 42, 0.55);
       border: 1px solid rgba(148, 163, 184, 0.14);
       border-radius: 18px;
-      position: relative;
       overflow: hidden;
     }
 
@@ -207,7 +218,6 @@
       border-radius: 999px;
       background: rgba(148, 163, 184, 0.16);
       overflow: hidden;
-      position: relative;
     }
 
     .progress-fill {
@@ -231,11 +241,6 @@
       animation: scorePop 0.45s ease;
     }
 
-    @keyframes scorePop {
-      from { opacity: 0; transform: translateY(8px) scale(0.98); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
@@ -252,7 +257,6 @@
       transform: translateY(18px) scale(0.985);
       opacity: 0;
       transition: transform 0.45s ease, opacity 0.45s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-      will-change: transform, opacity;
       scroll-margin-top: 92px;
       contain: content;
     }
@@ -356,20 +360,6 @@
       animation: wrongShake 0.38s ease;
     }
 
-    @keyframes correctPulse {
-      0% { transform: scale(1); }
-      45% { transform: scale(1.015); }
-      100% { transform: scale(1); }
-    }
-
-    @keyframes wrongShake {
-      0%, 100% { transform: translateX(0); }
-      20% { transform: translateX(-3px); }
-      40% { transform: translateX(3px); }
-      60% { transform: translateX(-2px); }
-      80% { transform: translateX(2px); }
-    }
-
     .small {
       font-size: 0.8rem;
       color: var(--muted);
@@ -381,6 +371,24 @@
       margin-top: 10px;
       line-height: 1.45;
     }
+
+    .top-btn {
+      position: fixed;
+      right: 14px;
+      bottom: 92px;
+      z-index: 40;
+      display: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #07111f;
+      border-radius: 999px;
+      padding: 12px 16px;
+      min-height: 46px;
+      font-weight: 900;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+
+    .top-btn.show { display: block; animation: scorePop 0.28s ease; }
 
     .mobile-dock {
       position: fixed;
@@ -417,29 +425,13 @@
     .dock-pill strong { color: #bfdbfe; }
 
     @media (max-width: 720px) {
+      .top-btn { right: 12px; bottom: 104px; }
       .wrap { padding: 12px; padding-bottom: 124px; }
-      .hero {
-        padding: 16px;
-        border-radius: 22px;
-      }
-      .grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-      }
-      .qcard {
-        padding: 14px;
-        border-radius: 18px;
-      }
-      .actions {
-        grid-template-columns: 1fr;
-      }
-      button {
-        width: 100%;
-      }
-      .sticky {
-        top: 0;
-        border-radius: 0 0 20px 20px;
-      }
+      .hero { padding: 16px; border-radius: 22px; }
+      .grid { grid-template-columns: 1fr; gap: 10px; }
+      .qcard { padding: 14px; border-radius: 18px; }
+      .actions { grid-template-columns: 1fr; }
+      button { width: 100%; }
       .mobile-dock { display: block; }
     }
 
@@ -449,10 +441,7 @@
       p { font-size: 0.94rem; }
       .hero { padding: 14px; }
       .qtext { font-size: 0.96rem; }
-      label.option {
-        padding: 11px 11px;
-        border-radius: 12px;
-      }
+      label.option { padding: 11px 11px; border-radius: 12px; }
       .scorebox { font-size: 0.95rem; }
       .small { font-size: 0.76rem; }
       .progress-shell { padding: 10px; }
@@ -471,7 +460,7 @@
 </head>
 <body>
   <div class="wrap">
-    <div class="hero sticky">
+    <div class="hero">
       <h1>Lalshalu Exam Answer Checker</h1>
       <p>Choose one answer for each MCQ, then press Check Answers. It updates live, shows the right answer, and keeps the whole thing smooth on phone.</p>
       <div class="progress-shell">
@@ -479,8 +468,8 @@
         <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
       </div>
       <div class="actions">
-        <button class="primary" onclick="checkAnswers()">Check Answers</button>
-        <button class="secondary" onclick="resetQuiz()">Reset</button>
+        <button class="primary" type="button" onclick="checkAnswers()">Check Answers</button>
+        <button class="secondary" type="button" onclick="resetQuiz()">Reset</button>
       </div>
       <div id="scoreBox" class="scorebox"></div>
       <div class="small">Tap an option and it checks instantly. Wrong picks reveal the correct one right away.</div>
@@ -489,10 +478,12 @@
     <form id="quizForm" class="grid"></form>
   </div>
 
+  <button id="topBtn" class="top-btn" type="button" onclick="goTop()" aria-label="Go to top">↑ Top</button>
+
   <div class="mobile-dock">
     <div class="dock-inner">
       <div class="dock-pill"><strong id="dockAnswered">0</strong> answered</div>
-      <button class="primary" onclick="checkAnswers()">Check</button>
+      <button class="primary" type="button" onclick="checkAnswers()">Check</button>
     </div>
   </div>
 
@@ -502,7 +493,7 @@
       { q: "‘লালসালু’ উপন্যাসে অশীতিপর বৃদ্ধ কে?", o: ["পীর সাহেব", "আক্কাসের বাপ", "সেলেমনের বাপ", "তাহের-কাদেরের বাপ"], a: 0 },
       { q: "‘তোমার দাড়ি কই মিয়া?’—কাকে বলা হয়েছে?", o: ["আক্কাস", "তাহের", "কাদের", "ধলা মিয়া"], a: 0 },
       { q: "জিমলা কার সম্পর্কে ‘তানি বুঝি দুলার বাপ।’ উক্তি করে?", o: ["মোদাচ্ছের মিয়া", "খালেক ব্যাপারী", "মতলুব মিয়া", "মজিদ"], a: 1 },
-      { q: "মজিদ কীভাবে তার প্রভাব প্রতিষ্ঠা করে?", o: ["অলৌকিক ক্ষমতাবলে", "সবার সাথে ভালো ব্যবহার করে", "অঢেল অর্থ ও প্রতিপত্তির জোরে", "সবার মধ্যে অবিশ্বাস সৃষ্টি করে"], a: 3 },
+      { q: "মজিদ কীভাবে তার প্রভাব প্রতিষ্ঠা করে?", o: ["অলৌকিক ক্ষমতাবলে", "সবার সাথে ভালো ব্যবহার করে", "অঢেল অর্থ ও প্রতিপত্তির জোরে", "সবার মধ্যে অন্ধবিশ্বাস সৃষ্টি করে"], a: 3 },
       { q: "‘লালসালু’ উপন্যাসের শেষ বাক্য কোনটি?", o: ["নাফরমানি করিও না", "মুহূর্তের মধ্যে কেয়ামত হবে", "খোদার উপর তেওয়াক্কুল রাখো", "বিশ্বাসের পাথরে যেন খোদাই সে চোখ"], a: 0 },
       { q: "দেশে দেশে পীরদের সফর শুরু হয় কখন?", o: ["ধানের মৌসুমে", "দুর্ভিক্ষের সময়", "গায়েবি নির্দেশ পেলে", "মুরিদদের আহ্বান পেলে"], a: 1 },
       { q: "‘লালসালু’ উপন্যাসে অবিশ্রান্ত ঢোলক বেজে চলে কোথায়?", o: ["মতিগঞ্জে", "গারো পাহাড়ে", "ডোমপাড়ায়", "আওয়ালপুরে"], a: 3 },
@@ -518,7 +509,7 @@
       { q: "‘তাদের দিল সাচ্চা, খাঁটি সোনার মতো।’—কাদের?", o: ["মতিগঞ্জের মানুষদের", "গারো পাহাড়ের লোকদের", "মহব্বত নগরের মানুষদের", "মধুপুরের অধিবাসীদের"], a: 1 },
       { q: "মজিদ বারবার আড়চোখে আমেনা বিবির দিকে তাকাচ্ছিল কেন?", o: ["রূপের মোহে", "ভীতি সৃষ্টির জন্য", "কড়া শাসনে রাখার জন্য", "মনের ভাব বুঝতে"], a: 0 },
       { q: "খালেক ব্যাপারীর প্রথম স্ত্রীর নাম কী?", o: ["আমেনা", "জমিলা", "ফাতেমা", "রহিমা"], a: 0 },
-      { q: "মজিদের মন অন্ধকার হয়ে আসে কেন?", o: ["পীর সাহেবের আগমনে", "জমিলাকে শাসন করতে ব্যর্থ হলে", "আমেনা বিবি অন্ধবিশ্বাস করায়", "মাজারে লালসালু কাপড়ের বিবর্ণতা দেখে"], a: 1 },
+      { q: "মজিদের মন অন্ধকার হয়ে আসে কেন?", o: ["পীর সাহেবের আগমনে", "জমিলাকে শাসন করতে ব্যর্থ হলে", "আমেনা বিবি অবিশ্বাস করায়", "মাজারে লালসালু কাপড়ের বিবর্ণতা দেখে"], a: 1 },
       { q: "লালসালু উপন্যাসে বিদ্রোহী চরিত্র হিসেবে কার আবির্ভাব ঘটে?", o: ["রহিমার", "আমেনার", "জমিলার", "হাসুনির মায়ের"], a: 2 },
       { q: "লালসালু উপন্যাসের প্রধান চরিত্র কোনটি?", o: ["মজিদ", "মোদাচ্ছের পীর", "তাহের", "খালেক ব্যাপারী"], a: 0 },
       { q: "মজিদের কী খাওয়ার অভ্যাস ছিল?", o: ["হুক্কা", "বিড়ি", "সিগারেট", "পান"], a: 0 },
@@ -586,10 +577,15 @@
     const progressText = document.getElementById('progressText');
     const progressPercent = document.getElementById('progressPercent');
     const dockAnswered = document.getElementById('dockAnswered');
+    const topBtn = document.getElementById('topBtn');
     let liveScore = 0;
 
     function getAnsweredCount() {
-      return Array.from({ length: questions.length }, (_, idx) => document.querySelector(`input[name="q${idx}"]:checked`) ? 1 : 0).reduce((a, b) => a + b, 0);
+      let count = 0;
+      for (let i = 0; i < questions.length; i++) {
+        if (document.querySelector(`input[name="q${i}"]:checked`)) count++;
+      }
+      return count;
     }
 
     function updateProgressUI() {
@@ -659,9 +655,10 @@
           });
         });
         form.appendChild(card);
-        requestAnimationFrame(() => setTimeout(() => card.classList.add('show'), idx * 18));
+        setTimeout(() => card.classList.add('show'), idx * 18);
       });
       updateScoreBox();
+      toggleTopBtn();
     }
 
     function checkAnswers() {
@@ -675,9 +672,7 @@
 
     function resetQuiz() {
       document.getElementById('quizForm').reset();
-      document.querySelectorAll('.option').forEach(el => {
-        el.classList.remove('result-correct', 'result-wrong');
-      });
+      document.querySelectorAll('.option').forEach(el => el.classList.remove('result-correct', 'result-wrong'));
       liveScore = 0;
       scoreBox.style.display = 'none';
       scoreBox.innerHTML = '';
@@ -685,6 +680,16 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    function goTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleTopBtn() {
+      if (window.scrollY > 240) topBtn.classList.add('show');
+      else topBtn.classList.remove('show');
+    }
+
+    window.addEventListener('scroll', toggleTopBtn, { passive: true });
     buildQuiz();
   </script>
 </body>
