@@ -6,119 +6,466 @@
   <title>Lalshalu Exam Answer Checker</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --card: #111827;
-      --card2: #1f2937;
+      --bg1: #07111f;
+      --bg2: #0f172a;
+      --card: rgba(15, 23, 42, 0.72);
       --text: #e5e7eb;
       --muted: #94a3b8;
-      --accent: #38bdf8;
+      --accent: #60a5fa;
+      --accent-2: #22d3ee;
+      --accent-3: #a78bfa;
       --good: #22c55e;
       --bad: #ef4444;
-      --border: #334155;
+      --border: rgba(148, 163, 184, 0.22);
+      --shadow: 0 22px 48px rgba(0, 0, 0, 0.32);
+      --shadow-soft: 0 14px 28px rgba(0, 0, 0, 0.18);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
     }
+
     * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
     body {
       margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
       color: var(--text);
-      line-height: 1.5;
+      line-height: 1.55;
+      background:
+        radial-gradient(circle at top, rgba(96, 165, 250, 0.20), transparent 32%),
+        radial-gradient(circle at 85% 10%, rgba(167, 139, 250, 0.16), transparent 26%),
+        radial-gradient(circle at 20% 90%, rgba(34, 211, 238, 0.10), transparent 22%),
+        linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
     }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      width: 360px;
+      height: 360px;
+      border-radius: 50%;
+      filter: blur(70px);
+      opacity: 0.22;
+      pointer-events: none;
+      z-index: 0;
+      animation: floatGlow 14s ease-in-out infinite alternate;
+    }
+
+    body::before {
+      top: -90px;
+      left: -100px;
+      background: radial-gradient(circle, rgba(96, 165, 250, 0.95), transparent 70%);
+    }
+
+    body::after {
+      right: -120px;
+      bottom: -110px;
+      background: radial-gradient(circle, rgba(34, 211, 238, 0.9), transparent 70%);
+      animation-delay: -5s;
+    }
+
+    @keyframes floatGlow {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to { transform: translate3d(18px, 24px, 0) scale(1.12); }
+    }
+
     .wrap {
-      max-width: 1100px;
+      width: min(100%, 1120px);
       margin: 0 auto;
-      padding: 24px;
+      padding: 16px;
+      padding-bottom: 108px;
+      position: relative;
+      z-index: 1;
     }
+
     .hero {
-      background: rgba(17, 24, 39, 0.9);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 20px;
-      margin-bottom: 18px;
-      box-shadow: 0 20px 40px rgba(0,0,0,.25);
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(17, 24, 39, 0.86));
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: var(--radius-xl);
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(18px);
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
     }
-    h1 { margin: 0 0 8px; font-size: 28px; }
-    p { margin: 6px 0; color: var(--muted); }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.08), transparent 40%, rgba(34, 211, 238, 0.06));
+      pointer-events: none;
+    }
+
+    .hero:hover {
+      transform: translateY(-2px);
+      border-color: rgba(96, 165, 250, 0.34);
+      box-shadow: 0 24px 56px rgba(0, 0, 0, 0.38);
+    }
+
+    .sticky {
+      position: sticky;
+      top: 8px;
+      z-index: 20;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.35rem, 4.2vw, 2.2rem);
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      text-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+    }
+
+    p {
+      margin: 6px 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
     .actions {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 10px;
       margin-top: 14px;
     }
+
     button {
+      appearance: none;
       border: 0;
-      border-radius: 12px;
-      padding: 12px 16px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .primary { background: var(--accent); color: #0f172a; }
-    .secondary { background: #334155; color: var(--text); }
-    .scorebox {
-      margin-top: 14px;
-      padding: 14px 16px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: rgba(31,41,55,.8);
-      display: none;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 14px;
-    }
-    .qcard {
-      background: rgba(17, 24, 39, 0.92);
-      border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 16px;
+      padding: 14px 16px;
+      min-height: 50px;
+      font-weight: 900;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease, filter 0.18s ease;
+      box-shadow: var(--shadow-soft);
+      touch-action: manipulation;
+      position: relative;
+      overflow: hidden;
     }
-    .qhead {
+
+    button::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.18) 50%, transparent 100%);
+      transform: translateX(-120%);
+      transition: transform 0.45s ease;
+    }
+
+    button:hover::after { transform: translateX(120%); }
+    button:hover { transform: translateY(-2px); filter: brightness(1.03); }
+    button:active { transform: scale(0.98); }
+
+    .primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #07111f;
+    }
+
+    .secondary {
+      background: linear-gradient(135deg, rgba(51, 65, 85, 0.98), rgba(30, 41, 59, 0.98));
+      color: var(--text);
+    }
+
+    .progress-shell {
+      margin-top: 14px;
+      padding: 12px;
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-meta {
       display: flex;
       justify-content: space-between;
       gap: 10px;
-      align-items: baseline;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.16);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+      box-shadow: 0 0 24px rgba(96, 165, 250, 0.35);
+      transition: width 0.32s ease;
+    }
+
+    .scorebox {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 16px;
+      background: rgba(30, 41, 59, 0.82);
+      display: none;
+      box-shadow: var(--shadow-soft);
+      font-size: 0.98rem;
+      animation: scorePop 0.45s ease;
+    }
+
+    @keyframes scorePop {
+      from { opacity: 0; transform: translateY(8px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 12px;
+    }
+
+    .qcard {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.82), rgba(17, 24, 39, 0.96));
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      transform: translateY(18px) scale(0.985);
+      opacity: 0;
+      transition: transform 0.45s ease, opacity 0.45s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      will-change: transform, opacity;
+      scroll-margin-top: 92px;
+      contain: content;
+    }
+
+    .qcard.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .qcard:hover {
+      border-color: rgba(96, 165, 250, 0.28);
+      box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24);
+    }
+
+    .qhead {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
       margin-bottom: 10px;
     }
+
     .qnum {
-      font-weight: 700;
-      color: var(--accent);
+      font-weight: 900;
+      color: #bfdbfe;
+      letter-spacing: 0.02em;
+      font-size: 0.84rem;
+      text-transform: uppercase;
+      background: rgba(96, 165, 250, 0.10);
+      border: 1px solid rgba(96, 165, 250, 0.15);
+      padding: 6px 10px;
+      border-radius: 999px;
     }
+
     .qtext {
       margin: 0 0 12px;
-      font-size: 16px;
+      font-size: 1rem;
       color: var(--text);
+      word-break: break-word;
     }
-    .options { display: grid; gap: 8px; }
+
+    .options {
+      display: grid;
+      gap: 8px;
+    }
+
     label.option {
       display: flex;
       gap: 10px;
       align-items: flex-start;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: rgba(31, 41, 55, 0.7);
+      padding: 12px 12px;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 14px;
+      background: rgba(30, 41, 59, 0.68);
       cursor: pointer;
+      transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+      min-height: 48px;
+      -webkit-tap-highlight-color: transparent;
+      position: relative;
+      overflow: hidden;
     }
-    label.option:hover { border-color: var(--accent); }
-    input[type="radio"] { margin-top: 3px; }
-    .result-correct { border-color: var(--good) !important; background: rgba(34,197,94,.12) !important; }
-    .result-wrong { border-color: var(--bad) !important; background: rgba(239,68,68,.12) !important; }
+
+    label.option::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+      transform: translateX(-120%);
+      transition: transform 0.5s ease;
+    }
+
+    label.option:hover::before { transform: translateX(120%); }
+    label.option:hover { border-color: rgba(96, 165, 250, 0.42); transform: translateY(-1px); }
+    label.option:active { transform: scale(0.995); }
+
+    label.option span {
+      flex: 1;
+      min-width: 0;
+      word-break: break-word;
+      font-size: 0.98rem;
+    }
+
+    input[type="radio"] {
+      margin-top: 3px;
+      transform: scale(1.08);
+      accent-color: var(--accent);
+      flex: 0 0 auto;
+    }
+
+    .result-correct {
+      border-color: rgba(34, 197, 94, 0.95) !important;
+      background: rgba(34, 197, 94, 0.14) !important;
+      box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.18);
+      animation: correctPulse 0.45s ease;
+    }
+
+    .result-wrong {
+      border-color: rgba(239, 68, 68, 0.95) !important;
+      background: rgba(239, 68, 68, 0.14) !important;
+      box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.18);
+      animation: wrongShake 0.38s ease;
+    }
+
+    @keyframes correctPulse {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.015); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes wrongShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-3px); }
+      40% { transform: translateX(3px); }
+      60% { transform: translateX(-2px); }
+      80% { transform: translateX(2px); }
+    }
+
     .small {
-      font-size: 13px;
+      font-size: 0.8rem;
       color: var(--muted);
-      margin-top: 8px;
+      white-space: nowrap;
     }
-    .sticky {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      backdrop-filter: blur(10px);
+
+    .hero .small {
+      white-space: normal;
+      margin-top: 10px;
+      line-height: 1.45;
     }
-    @media (max-width: 600px) {
-      .wrap { padding: 14px; }
-      h1 { font-size: 22px; }
-      button { width: 100%; }
+
+    .mobile-dock {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 30;
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      display: none;
+      background: linear-gradient(180deg, rgba(7, 17, 31, 0), rgba(7, 17, 31, 0.92) 30%, rgba(7, 17, 31, 0.98));
+      backdrop-filter: blur(12px);
+    }
+
+    .dock-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .dock-pill {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 18px;
+      padding: 10px 12px;
+      box-shadow: var(--shadow-soft);
+      text-align: center;
+      font-weight: 800;
+      font-size: 0.92rem;
+      color: var(--text);
+    }
+
+    .dock-pill strong { color: #bfdbfe; }
+
+    @media (max-width: 720px) {
+      .wrap { padding: 12px; padding-bottom: 124px; }
+      .hero {
+        padding: 16px;
+        border-radius: 22px;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .qcard {
+        padding: 14px;
+        border-radius: 18px;
+      }
+      .actions {
+        grid-template-columns: 1fr;
+      }
+      button {
+        width: 100%;
+      }
+      .sticky {
+        top: 0;
+        border-radius: 0 0 20px 20px;
+      }
+      .mobile-dock { display: block; }
+    }
+
+    @media (max-width: 480px) {
+      .wrap { padding: 10px; padding-bottom: 132px; }
+      h1 { font-size: 1.2rem; }
+      p { font-size: 0.94rem; }
+      .hero { padding: 14px; }
+      .qtext { font-size: 0.96rem; }
+      label.option {
+        padding: 11px 11px;
+        border-radius: 12px;
+      }
+      .scorebox { font-size: 0.95rem; }
+      .small { font-size: 0.76rem; }
+      .progress-shell { padding: 10px; }
+      .dock-inner { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+      }
+      .qcard { opacity: 1; transform: none; }
     }
   </style>
 </head>
@@ -126,16 +473,27 @@
   <div class="wrap">
     <div class="hero sticky">
       <h1>Lalshalu Exam Answer Checker</h1>
-      <p>Choose one answer for each MCQ, then press Check Answers. It will show your score and mark right and wrong options.</p>
+      <p>Choose one answer for each MCQ, then press Check Answers. It updates live, shows the right answer, and keeps the whole thing smooth on phone.</p>
+      <div class="progress-shell">
+        <div class="progress-meta"><span id="progressText">0 / 70 answered</span><span id="progressPercent">0%</span></div>
+        <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+      </div>
       <div class="actions">
         <button class="primary" onclick="checkAnswers()">Check Answers</button>
         <button class="secondary" onclick="resetQuiz()">Reset</button>
       </div>
       <div id="scoreBox" class="scorebox"></div>
-      <div class="small">Note: This is built from the exam text in your PDF. If you want, I can also make a cleaner version with search, timer, and shuffled questions.</div>
+      <div class="small">Tap an option and it checks instantly. Wrong picks reveal the correct one right away.</div>
     </div>
 
     <form id="quizForm" class="grid"></form>
+  </div>
+
+  <div class="mobile-dock">
+    <div class="dock-inner">
+      <div class="dock-pill"><strong id="dockAnswered">0</strong> answered</div>
+      <button class="primary" onclick="checkAnswers()">Check</button>
+    </div>
   </div>
 
   <script>
@@ -144,7 +502,7 @@
       { q: "‘লালসালু’ উপন্যাসে অশীতিপর বৃদ্ধ কে?", o: ["পীর সাহেব", "আক্কাসের বাপ", "সেলেমনের বাপ", "তাহের-কাদেরের বাপ"], a: 0 },
       { q: "‘তোমার দাড়ি কই মিয়া?’—কাকে বলা হয়েছে?", o: ["আক্কাস", "তাহের", "কাদের", "ধলা মিয়া"], a: 0 },
       { q: "জিমলা কার সম্পর্কে ‘তানি বুঝি দুলার বাপ।’ উক্তি করে?", o: ["মোদাচ্ছের মিয়া", "খালেক ব্যাপারী", "মতলুব মিয়া", "মজিদ"], a: 1 },
-      { q: "মজিদ কীভাবে তার প্রভাব প্রতিষ্ঠা করে?", o: ["অলৌকিক ক্ষমতাবলে", "সবার সাথে ভালো ব্যবহার করে", "অঢেল অর্থ ও প্রতিপত্তির জোরে", "সবার মধ্যে অন্ধবিশ্বাস সৃষ্টি করে"], a: 3 },
+      { q: "মজিদ কীভাবে তার প্রভাব প্রতিষ্ঠা করে?", o: ["অলৌকিক ক্ষমতাবলে", "সবার সাথে ভালো ব্যবহার করে", "অঢেল অর্থ ও প্রতিপত্তির জোরে", "সবার মধ্যে অবিশ্বাস সৃষ্টি করে"], a: 3 },
       { q: "‘লালসালু’ উপন্যাসের শেষ বাক্য কোনটি?", o: ["নাফরমানি করিও না", "মুহূর্তের মধ্যে কেয়ামত হবে", "খোদার উপর তেওয়াক্কুল রাখো", "বিশ্বাসের পাথরে যেন খোদাই সে চোখ"], a: 0 },
       { q: "দেশে দেশে পীরদের সফর শুরু হয় কখন?", o: ["ধানের মৌসুমে", "দুর্ভিক্ষের সময়", "গায়েবি নির্দেশ পেলে", "মুরিদদের আহ্বান পেলে"], a: 1 },
       { q: "‘লালসালু’ উপন্যাসে অবিশ্রান্ত ঢোলক বেজে চলে কোথায়?", o: ["মতিগঞ্জে", "গারো পাহাড়ে", "ডোমপাড়ায়", "আওয়ালপুরে"], a: 3 },
@@ -160,7 +518,7 @@
       { q: "‘তাদের দিল সাচ্চা, খাঁটি সোনার মতো।’—কাদের?", o: ["মতিগঞ্জের মানুষদের", "গারো পাহাড়ের লোকদের", "মহব্বত নগরের মানুষদের", "মধুপুরের অধিবাসীদের"], a: 1 },
       { q: "মজিদ বারবার আড়চোখে আমেনা বিবির দিকে তাকাচ্ছিল কেন?", o: ["রূপের মোহে", "ভীতি সৃষ্টির জন্য", "কড়া শাসনে রাখার জন্য", "মনের ভাব বুঝতে"], a: 0 },
       { q: "খালেক ব্যাপারীর প্রথম স্ত্রীর নাম কী?", o: ["আমেনা", "জমিলা", "ফাতেমা", "রহিমা"], a: 0 },
-      { q: "মজিদের মন অন্ধকার হয়ে আসে কেন?", o: ["পীর সাহেবের আগমনে", "জমিলাকে শাসন করতে ব্যর্থ হলে", "আমেনা বিবি অবিশ্বাস করায়", "মাজারে লালসালু কাপড়ের বিবর্ণতা দেখে"], a: 1 },
+      { q: "মজিদের মন অন্ধকার হয়ে আসে কেন?", o: ["পীর সাহেবের আগমনে", "জমিলাকে শাসন করতে ব্যর্থ হলে", "আমেনা বিবি অন্ধবিশ্বাস করায়", "মাজারে লালসালু কাপড়ের বিবর্ণতা দেখে"], a: 1 },
       { q: "লালসালু উপন্যাসে বিদ্রোহী চরিত্র হিসেবে কার আবির্ভাব ঘটে?", o: ["রহিমার", "আমেনার", "জমিলার", "হাসুনির মায়ের"], a: 2 },
       { q: "লালসালু উপন্যাসের প্রধান চরিত্র কোনটি?", o: ["মজিদ", "মোদাচ্ছের পীর", "তাহের", "খালেক ব্যাপারী"], a: 0 },
       { q: "মজিদের কী খাওয়ার অভ্যাস ছিল?", o: ["হুক্কা", "বিড়ি", "সিগারেট", "পান"], a: 0 },
@@ -213,48 +571,40 @@
     ];
 
     const answerFixes = {
-      1: 2,
-      2: 0,
-      3: 3,
-      5: 3,
-      6: 0,
-      7: 2,
-      9: 0,
-      10: 1,
-      12: 0,
-      14: 0,
-      15: 1,
-      20: 1,
-      21: 2,
-      24: 3,
-      27: 0,
-      30: 2,
-      33: 3,
-      38: 1,
-      39: 0,
-      40: 1,
-      50: 0,
-      53: 1,
-      54: 0,
-      67: 0
+      1: 2, 2: 0, 3: 3, 5: 3, 6: 0, 7: 2, 9: 0, 10: 1, 12: 0, 14: 0,
+      15: 1, 20: 1, 21: 2, 24: 3, 27: 0, 30: 2, 33: 3, 38: 1, 39: 0,
+      40: 1, 50: 0, 53: 1, 54: 0, 67: 0
     };
 
     questions.forEach((item, idx) => {
-      if (Object.prototype.hasOwnProperty.call(answerFixes, idx)) {
-        item.a = answerFixes[idx];
-      }
+      if (Object.prototype.hasOwnProperty.call(answerFixes, idx)) item.a = answerFixes[idx];
     });
 
     const form = document.getElementById('quizForm');
     const scoreBox = document.getElementById('scoreBox');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const progressPercent = document.getElementById('progressPercent');
+    const dockAnswered = document.getElementById('dockAnswered');
     let liveScore = 0;
 
+    function getAnsweredCount() {
+      return Array.from({ length: questions.length }, (_, idx) => document.querySelector(`input[name="q${idx}"]:checked`) ? 1 : 0).reduce((a, b) => a + b, 0);
+    }
+
+    function updateProgressUI() {
+      const answered = getAnsweredCount();
+      const pct = Math.round((answered / questions.length) * 100);
+      progressFill.style.width = `${pct}%`;
+      progressText.textContent = `${answered} / ${questions.length} answered`;
+      progressPercent.textContent = `${pct}%`;
+      dockAnswered.textContent = answered;
+    }
+
     function updateScoreBox() {
-      const answered = Array.from({ length: questions.length }, (_, idx) => {
-        return document.querySelector(`input[name="q${idx}"]:checked`) ? 1 : 0;
-      }).reduce((a, b) => a + b, 0);
+      updateProgressUI();
       scoreBox.style.display = 'block';
-      scoreBox.innerHTML = `<b>Live score:</b> ${liveScore} / ${questions.length}<br><b>Answered:</b> ${answered} / ${questions.length}`;
+      scoreBox.innerHTML = `<b>Live score:</b> ${liveScore} / ${questions.length}<br><b>Answered:</b> ${getAnsweredCount()} / ${questions.length}`;
     }
 
     function clearMarking(card) {
@@ -267,9 +617,7 @@
       const selected = document.querySelector(`input[name="q${idx}"]:checked`);
       const labels = card.querySelectorAll('label.option');
       clearMarking(card);
-
       if (!selected) return;
-
       const val = Number(selected.value);
       if (val === item.a) {
         selected.closest('label.option').classList.add('result-correct');
@@ -307,9 +655,11 @@
             recomputeScore();
             markQuestion(idx);
             updateScoreBox();
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
           });
         });
         form.appendChild(card);
+        requestAnimationFrame(() => setTimeout(() => card.classList.add('show'), idx * 18));
       });
       updateScoreBox();
     }
@@ -317,6 +667,7 @@
     function checkAnswers() {
       recomputeScore();
       questions.forEach((_, idx) => markQuestion(idx));
+      updateProgressUI();
       scoreBox.style.display = 'block';
       scoreBox.innerHTML = `<b>Final score:</b> ${liveScore} / ${questions.length}<br><b>Accuracy:</b> ${Math.round((liveScore / questions.length) * 100)}%`;
       scoreBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -330,6 +681,7 @@
       liveScore = 0;
       scoreBox.style.display = 'none';
       scoreBox.innerHTML = '';
+      updateProgressUI();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
