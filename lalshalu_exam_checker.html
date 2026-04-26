@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lalshalu Exam Answer Checker</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --card2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --good: #22c55e;
+      --bad: #ef4444;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .hero {
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 20px 40px rgba(0,0,0,.25);
+    }
+    h1 { margin: 0 0 8px; font-size: 28px; }
+    p { margin: 6px 0; color: var(--muted); }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .primary { background: var(--accent); color: #0f172a; }
+    .secondary { background: #334155; color: var(--text); }
+    .scorebox {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(31,41,55,.8);
+      display: none;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 14px;
+    }
+    .qcard {
+      background: rgba(17, 24, 39, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .qhead {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+    .qnum {
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .qtext {
+      margin: 0 0 12px;
+      font-size: 16px;
+      color: var(--text);
+    }
+    .options { display: grid; gap: 8px; }
+    label.option {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(31, 41, 55, 0.7);
+      cursor: pointer;
+    }
+    label.option:hover { border-color: var(--accent); }
+    input[type="radio"] { margin-top: 3px; }
+    .result-correct { border-color: var(--good) !important; background: rgba(34,197,94,.12) !important; }
+    .result-wrong { border-color: var(--bad) !important; background: rgba(239,68,68,.12) !important; }
+    .small {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .sticky {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+    }
+    @media (max-width: 600px) {
+      .wrap { padding: 14px; }
+      h1 { font-size: 22px; }
+      button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero sticky">
+      <h1>Lalshalu Exam Answer Checker</h1>
+      <p>Choose one answer for each MCQ, then press Check Answers. It will show your score and mark right and wrong options.</p>
+      <div class="actions">
+        <button class="primary" onclick="checkAnswers()">Check Answers</button>
+        <button class="secondary" onclick="resetQuiz()">Reset</button>
+      </div>
+      <div id="scoreBox" class="scorebox"></div>
+      <div class="small">Note: This is built from the exam text in your PDF. If you want, I can also make a cleaner version with search, timer, and shuffled questions.</div>
+    </div>
+
+    <form id="quizForm" class="grid"></form>
+  </div>
+
+  <script>
+    const questions = [
+      { q: "‘কী মিয়া? তোমার দাড়ি কি ময়লা আছে?’—উক্তিটি কার?", o: ["মজিদ", "মোদাচ্ছের", "পীর সাহেব", "খালেক ব্যাপারী"], a: 0 },
+      { q: "‘লালসালু’ উপন্যাসে অশীতিপর বৃদ্ধ কে?", o: ["পীর সাহেব", "আক্কাসের বাপ", "সেলেমনের বাপ", "তাহের-কাদেরের বাপ"], a: 0 },
+      { q: "‘তোমার দাড়ি কই মিয়া?’—কাকে বলা হয়েছে?", o: ["আক্কাস", "তাহের", "কাদের", "ধলা মিয়া"], a: 0 },
+      { q: "জিমলা কার সম্পর্কে ‘তানি বুঝি দুলার বাপ।’ উক্তি করে?", o: ["মোদাচ্ছের মিয়া", "খালেক ব্যাপারী", "মতলুব মিয়া", "মজিদ"], a: 1 },
+      { q: "মজিদ কীভাবে তার প্রভাব প্রতিষ্ঠা করে?", o: ["অলৌকিক ক্ষমতাবলে", "সবার সাথে ভালো ব্যবহার করে", "অঢেল অর্থ ও প্রতিপত্তির জোরে", "সবার মধ্যে অবিশ্বাস সৃষ্টি করে"], a: 3 },
+      { q: "‘লালসালু’ উপন্যাসের শেষ বাক্য কোনটি?", o: ["নাফরমানি করিও না", "মুহূর্তের মধ্যে কেয়ামত হবে", "খোদার উপর তেওয়াক্কুল রাখো", "বিশ্বাসের পাথরে যেন খোদাই সে চোখ"], a: 0 },
+      { q: "দেশে দেশে পীরদের সফর শুরু হয় কখন?", o: ["ধানের মৌসুমে", "দুর্ভিক্ষের সময়", "গায়েবি নির্দেশ পেলে", "মুরিদদের আহ্বান পেলে"], a: 1 },
+      { q: "‘লালসালু’ উপন্যাসে অবিশ্রান্ত ঢোলক বেজে চলে কোথায়?", o: ["মতিগঞ্জে", "গারো পাহাড়ে", "ডোমপাড়ায়", "আওয়ালপুরে"], a: 3 },
+      { q: "‘বেতার দিন’ কিসের সাথে সম্পর্কিত?", o: ["ঈদ", "পূজা", "চাষাবাদ", "বিয়ে"], a: 2 },
+      { q: "‘রুক্ষজমি’ কী?", o: ["নিষ্পলা জমি", "উর্বর জমি", "ধানী জমি", "অনুর্বর জমি"], a: 3 },
+      { q: "সৈয়দ ওয়ালীউল্লাহ কত সালে জন্মগ্রহণ করেন?", o: ["১৯২০ সালে", "১৯২২ সালে", "১৯২৪ সালে", "১৯২৭ সালে"], a: 1 },
+      { q: "‘চাঁদের অমাবস্যা’ কার লেখা?", o: ["শামসুর রাহমান", "শওকত ওসমান", "মানিক বন্দ্যোপাধ্যায়", "সৈয়দ ওয়ালীউল্লাহ"], a: 3 },
+      { q: "উপন্যাস-এর আক্ষরিক অর্থ কী?", o: ["বিশেষরূপে উত্থাপন", "ঘটনার বিশদ বিবরণ", "চরিত্রের ধারাবাহিক বিন্যাস", "ঘটনার সংক্ষিপ্ত বিবরণ"], a: 2 },
+      { q: "‘লালসালু’ উপন্যাসের বিষয়বস্তু কোনটি?", o: ["অতিপ্রাকৃত ঘটনা", "সাধারণ মানুষের জীবন", "গ্রামীণ মানুষের অন্ধত্ব", "সামাজিক বাস্তবতা"], a: 3 },
+      { q: "‘লালসালু’ কোন ধরনের উপন্যাস?", o: ["সামাজিক", "আঞ্চলিক", "ঐতিহাসিক", "রোমান্টিক"], a: 1 },
+      { q: "‘লালসালু’ উপন্যাসের উপজীব্য কী?", o: ["গ্রামীণ সমাজ", "ধর্মব্যবসা", "শ্রেণীসংগ্রাম", "অস্তিত্বের সংকট"], a: 1 },
+      { q: "লালসালু উপন্যাসে কার নিজেকে শিকড়ছাড়া বৃক্ষ মনে হয়?", o: ["খালেক ব্যাপারী", "মজিদ", "মতলুব খাঁ", "ধলা মিয়া"], a: 1 },
+      { q: "‘তাদের দিল সাচ্চা, খাঁটি সোনার মতো।’—কাদের?", o: ["মতিগঞ্জের মানুষদের", "গারো পাহাড়ের লোকদের", "মহব্বত নগরের মানুষদের", "মধুপুরের অধিবাসীদের"], a: 1 },
+      { q: "মজিদ বারবার আড়চোখে আমেনা বিবির দিকে তাকাচ্ছিল কেন?", o: ["রূপের মোহে", "ভীতি সৃষ্টির জন্য", "কড়া শাসনে রাখার জন্য", "মনের ভাব বুঝতে"], a: 0 },
+      { q: "খালেক ব্যাপারীর প্রথম স্ত্রীর নাম কী?", o: ["আমেনা", "জমিলা", "ফাতেমা", "রহিমা"], a: 0 },
+      { q: "মজিদের মন অন্ধকার হয়ে আসে কেন?", o: ["পীর সাহেবের আগমনে", "জমিলাকে শাসন করতে ব্যর্থ হলে", "আমেনা বিবি অবিশ্বাস করায়", "মাজারে লালসালু কাপড়ের বিবর্ণতা দেখে"], a: 1 },
+      { q: "লালসালু উপন্যাসে বিদ্রোহী চরিত্র হিসেবে কার আবির্ভাব ঘটে?", o: ["রহিমার", "আমেনার", "জমিলার", "হাসুনির মায়ের"], a: 2 },
+      { q: "লালসালু উপন্যাসের প্রধান চরিত্র কোনটি?", o: ["মজিদ", "মোদাচ্ছের পীর", "তাহের", "খালেক ব্যাপারী"], a: 0 },
+      { q: "মজিদের কী খাওয়ার অভ্যাস ছিল?", o: ["হুক্কা", "বিড়ি", "সিগারেট", "পান"], a: 0 },
+      { q: "‘খোদার এলেম বুক ভরে না’ কেন?", o: ["কুসংস্কারের জন্য", "স্বার্থপরতার জন্য", "শিক্ষাহীনতার জন্য", "তলায় পেটশূন্য বলে"], a: 2 },
+      { q: "‘তাই তারা ছোটে, ছোটে’—কেন ছোটে?", o: ["জীবিকার সন্ধানে", "মাছ ধরার জন্য", "লেখাপড়া করার জন্য", "পীরের কাছে যাওয়ার জন্য"], a: 0 },
+      { q: "লালসালু উপন্যাসে কে গ্রামে স্কুল প্রতিষ্ঠা করতে চায়?", o: ["মজিদ", "জমিলা", "আক্কাস", "মোদাচ্ছের"], a: 2 },
+      { q: "কোন সড়কের ওপর এক অপরিচিত লোক মানাজাতের ভঙ্গিতে দাঁড়িয়ে আছে?", o: ["মতিগঞ্জ সড়কে", "মহব্বতনগর সড়কে", "মধুপুর সড়কে", "পাহাড়গামী সড়কে"], a: 3 },
+      { q: "‘তা এই মতলব হইল কেন?’—বদ মতলবটা কী?", o: ["স্কুল প্রতিষ্ঠার প্রচেষ্টা", "মাজার উচ্ছেদের প্রচেষ্টা", "মসজিদ উচ্ছেদের প্রচেষ্টা", "রাস্তাঘাট বানানোর প্রচেষ্টা"], a: 0 },
+      { q: "লালসালু উপন্যাসের নায়িকা চরিত্র কোনটি?", o: ["জমিলা", "রহিমা", "হাসুনির মা", "আমেনা"], a: 0 },
+      { q: "‘ধান দিয়া কী হইব, মানুেষর জান যদি না থাকে?’—উক্তিটি কার?", o: ["আমেনা বিবির", "জমিলার", "রহিমার", "হাসুনির মায়ের"], a: 0 },
+      { q: "আমেনাকে তালাক দেওয়ার পরামর্শ দেন কে?", o: ["তানু বিবি", "ধলা মিয়া", "মজিদ", "চেয়ারম্যান"], a: 2 },
+      { q: "মজিদ খালেক ব্যাপারীকে কী পরামর্শ দেয়?", o: ["আমেনাকে তালাক দেওয়ার", "মাজার ভেঙে ফেলার", "মক্তব পাকা দালান করার", "মসজিদ নির্মাণের"], a: 0 },
+      { q: "‘দশ কথায় রাগ নেই, রক্তে রাগ নেই’—উক্তিটি রহিমা চরিত্রের কোন বিষয় ফুটিয়ে তোলে?", o: ["শান্ত নিরীহ ভাব", "অভিমানী ভাব", "কর্তব্যহীনতা", "স্বামীর প্রতি আনুগত্য"], a: 0 },
+      { q: "‘আসলে সে ঠান্ডা ভীতু মানুষ’।—কার কথা বলা হয়েছে?", o: ["জমিলা", "মজিদ", "রহিমা", "ব্যাপারী"], a: 3 },
+      { q: "মহব্বতনগরের সামাজিক নেতৃত্ব কার হাতে ছিল?", o: ["মজিদের", "খালেক ব্যাপারীর", "আক্কাস আলীর", "মোদাচ্ছের পীরের"], a: 1 },
+      { q: "লালসালু উপন্যাসে মাঠের ধান নষ্ট হয়ে যায় কেন?", o: ["ঝড়ো বৃষ্টিতে", "ঘন বৃষ্টিতে", "শিলাবৃষ্টিতে", "কালবৈশাখীতে"], a: 2 },
+      { q: "‘বেগানা’ শব্দের অর্থ কী?", o: ["অনাত্মীয়", "বেপর্দা", "আত্মীয়", "পর্দানশীন"], a: 0 },
+      { q: "নবাগত লোকটির কোটরাগত চোখে কী ছিল?", o: ["ক্ষোভ", "আগুন", "রাগ", "প্রতিহিংসার আগুন"], a: 3 },
+      { q: "তাহের-কাদেরের বাপ নিখোঁজ হয়েছিল কেন?", o: ["অপমানের কারণে", "স্ত্রীর সাথে ঝগড়া করে", "মনের বৈরাগ্যে", "দারিদ্র্যের কারণে"], a: 2 },
+      { q: "লালসালু উপন্যাসে হাসপাতালটি কোথায় অবস্থিত?", o: ["মতিগঞ্জে", "করিমগঞ্জে", "মহব্বতনগরে", "আওয়ালপুরে"], a: 2 },
+      { q: "লালসালু উপন্যাসে কে দেশান্তর হয়?", o: ["মজিদ", "খালেক ব্যাপারী", "আমেনা বিবি", "তাহেরের বাপ"], a: 3 },
+      { q: "লালসালু উপন্যাসে ঘুমকাতুর স্বভাবের কে?", o: ["জমিলা", "রহিমা", "আমেনা", "তানু বিবি"], a: 0 },
+      { q: "জমিলার বিদ্রোহের উৎস কোনটি?", o: ["সরলতা", "কপটতা", "ভীরুতা", "সহজ প্রাণধর্ম"], a: 3 },
+      { q: "মহব্বতনগরে নবাগত লোকটি কে?", o: ["ব্যাপারী", "রেহান আলী", "মজিদ", "কালুমতি"], a: 2 },
+      { q: "লালসালু উপন্যাসে ‘সাত ছেলের বাপ’ কে?", o: ["দুদু মিয়া", "সোলমান", "তাহের", "কাদের"], a: 0 },
+      { q: "কে হাঁটলে মাটিতে আওয়াজ হয়?", o: ["জমিলা", "রহিমা", "হাসুনির মা", "আমেনা"], a: 1 },
+      { q: "অতি সন্তর্পণে ধানের ফাঁকে ফাঁকে তারা নৌকা চালায় কেন?", o: ["মাছের উপস্থিতি টের পেয়ে", "দক্ষ শিকারি বলে", "শব্দ করলে মাছ পালায় বলে", "সতর্কতার মার নেই বলে"], a: 2 },
+      { q: "‘চাঁদের অমাবস্যা’ সৈয়দ ওয়ালীউল্লাহর কোন ধরনের গ্রন্থ?", o: ["উপন্যাস", "ছোটগল্প", "প্রবন্ধ", "নাটক"], a: 0 },
+      { q: "‘উপন্যাস’-এর ইংরেজি প্রতিশব্দ কী?", o: ["Story", "Novel", "Novela", "Big Story"], a: 1 },
+      { q: "উপন্যাসের প্রধান ভিত্তি কী?", o: ["প্লট", "চরিত্র", "সংলাপ", "স্টাইল"], a: 1 },
+      { q: "উপন্যাসের প্রধান উপজীব্য বিষয় কী?", o: ["মানুষের জীবন", "চরিত্র-চিত্রণ", "বিশ্বাসযোগ্য কাহিনী", "লেখকের জীবন-দর্শন"], a: 0 },
+      { q: "মনস্তাত্ত্বিক উপন্যাসের মূল উদ্দেশ্য কী?", o: ["চরিত্রের অন্তর্জগতের রহস্য উদঘাটন", "চরিত্রের দ্বৈত রহস্য উদঘাটন", "ঘটনার মহাজাগতিক তত্ত্ব বিশ্লেষণ", "চরিত্রের জীবনদর্শন বিশ্লেষণ"], a: 0 },
+      { q: "উপন্যাস হলো—i, ii, iii এর মধ্যে কোনটি সঠিক?", o: ["i ও ii", "i ও iii", "ii ও iii", "i, ii ও iii"], a: 3 },
+      { q: "উপন্যাসের সংলাপ মূলত—কোনটি সঠিক?", o: ["i ও ii", "i ও iii", "ii ও iii", "i, ii ও iii"], a: 3 },
+      { q: "বাংলা সাহিত্যে প্রথম সার্থক উপন্যাসের লেখক কে?", o: ["টেকচাঁদ ঠাকুর", "বঙ্কিমচন্দ্র চট্টোপাধ্যায়", "রবীন্দ্রনাথ ঠাকুর", "শরৎচন্দ্র চট্টোপাধ্যায়"], a: 1 },
+      { q: "সৈয়দ ওয়ালীউল্লাহর প্রথম উপন্যাস কোনটি?", o: ["চাঁদের অমাবস্যা", "লালসালু", "কাঁদা নদী কাঁদা", "পদ্মা-মেঘনা-যমুনা"], a: 1 },
+      { q: "‘বহিপীর’ সৈয়দ ওয়ালীউল্লাহর কোন ধরনের রচনা?", o: ["উপন্যাস", "ছোটগল্প", "নাটক", "প্রবন্ধ"], a: 2 },
+      { q: "‘নয়নচারা’ সৈয়দ ওয়ালীউল্লাহর কোন ধরনের গ্রন্থ?", o: ["গল্পগ্রন্থ", "উপন্যাস", "নাটক", "আত্মজীবনী"], a: 1 },
+      { q: "‘লালসালু’ উপন্যাসের পটভূমি কী?", o: ["রাজনীতি", "ধর্মনীতি", "উপজাতি সমাজ", "গ্রামীণ সমাজ"], a: 3 },
+      { q: "‘লালসালু’ উপন্যাসের প্রধান উপাদান কী?", o: ["সমাজ-বাস্তবতা", "ধর্মীয় গোড়ামি", "প্রতারণা", "কূটকৌশল"], a: 0 },
+      { q: "কোনটি আঞ্চলিক উপন্যাস?", o: ["পথের দাবী", "লালসালু", "হাঁসুলী বাঁকের উপকথা", "চিহ্ন"], a: 2 },
+      { q: "কোনটি ঐতিহাসিক উপন্যাস নয়?", o: ["War and Peace", "রাজসিংহ", "বিষাদ-সিন্ধু", "Crime and Punishment"], a: 3 },
+      { q: "E. M. Foster এর মতে উপন্যাসের শব্দসংখ্যা হওয়া উচিত কত?", o: ["ন্যূনতম ৩০ হাজার", "কমপক্ষে ৫০ হাজার", "আনুমানিক ৪০ হাজার", "বড়জোর ২০ হাজার"], a: 1 },
+      { q: "‘তার গা নীল নীল হইছে কেন?’—কার গা?", o: ["রহিমার", "আমেনার", "জমিলার", "হাসুনির মায়ের"], a: 3 },
+      { q: "‘লালসালু’-র ফরাসি অনুবাদ কোনটি?", o: ["L’arbre sans racines", "Tree without Roots", "Ola Senorita", "La’rbre Sens Reciess"], a: 0 },
+      { q: "‘বয়স হলে এরা আর কিছু না হোক শক্ত করে গিরে দিতে শেখে।’—কাদের কথা বলা হয়েছে?", o: ["মহব্বতনগরের বাসিন্দা", "মধুপুরের মানুষ", "আওয়ালপুরের পীরের মুরিদ", "শস্যহীন অঞ্চলের বাসিন্দা"], a: 3 },
+      { q: "‘সে এই দুর্গম অঞ্চলে মিহিকোজ্জের আজান শুনে চমকে ওঠে।’—কে চমকে ওঠে?", o: ["সরকারি কর্মচারী", "খালেক ব্যাপারী", "রহিমা", "মজিদ"], a: 3 },
+      { q: "শক্তিমত্তা নারীর উজ্জ্বল পরিষ্কার চোখে ঘনায়মান ভয়ের ছায়া দেখে মজিদ কী অনুভব করে?", o: ["রাগ হয়", "খুশি হয়", "বেজার হয়", "ঈর্ষান্বিত হয়"], a: 2 },
+      { q: "গ্রামবাসী সম্পর্কে মজিদের ধারণা কোনটি সঠিক?", o: ["i, ii", "i, iii", "ii, iii", "i, ii, iii"], a: 3 }
+    ];
+
+    const form = document.getElementById('quizForm');
+    const scoreBox = document.getElementById('scoreBox');
+    let liveScore = 0;
+
+    function updateScoreBox() {
+      const answered = Array.from({ length: questions.length }, (_, idx) => {
+        return document.querySelector(`input[name="q${idx}"]:checked`) ? 1 : 0;
+      }).reduce((a, b) => a + b, 0);
+      scoreBox.style.display = 'block';
+      scoreBox.innerHTML = `<b>Live score:</b> ${liveScore} / ${questions.length}<br><b>Answered:</b> ${answered} / ${questions.length}`;
+    }
+
+    function clearMarking(card) {
+      card.querySelectorAll('label.option').forEach(l => l.classList.remove('result-correct', 'result-wrong'));
+    }
+
+    function markQuestion(idx) {
+      const item = questions[idx];
+      const card = document.getElementById(`card-${idx}`);
+      const selected = document.querySelector(`input[name="q${idx}"]:checked`);
+      const labels = card.querySelectorAll('label.option');
+      clearMarking(card);
+
+      if (!selected) return;
+
+      const val = Number(selected.value);
+      if (val === item.a) {
+        selected.closest('label.option').classList.add('result-correct');
+      } else {
+        selected.closest('label.option').classList.add('result-wrong');
+        labels[item.a].classList.add('result-correct');
+      }
+    }
+
+    function recomputeScore() {
+      liveScore = 0;
+      questions.forEach((item, idx) => {
+        const selected = document.querySelector(`input[name="q${idx}"]:checked`);
+        if (selected && Number(selected.value) === item.a) liveScore++;
+      });
+    }
+
+    function buildQuiz() {
+      form.innerHTML = '';
+      questions.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = 'qcard';
+        card.id = `card-${idx}`;
+        const optionHTML = item.o.map((opt, i) => {
+          const letter = ['A', 'B', 'C', 'D'][i];
+          return `<label class="option"><input type="radio" name="q${idx}" value="${i}"><span><b>${letter}.</b> ${opt}</span></label>`;
+        }).join('');
+        card.innerHTML = `
+          <div class="qhead"><div class="qnum">Q${idx + 1}</div><div class="small">1 mark</div></div>
+          <p class="qtext">${item.q}</p>
+          <div class="options">${optionHTML}</div>
+        `;
+        card.querySelectorAll('input[type="radio"]').forEach(radio => {
+          radio.addEventListener('change', () => {
+            recomputeScore();
+            markQuestion(idx);
+            updateScoreBox();
+          });
+        });
+        form.appendChild(card);
+      });
+      updateScoreBox();
+    }
+
+    function checkAnswers() {
+      recomputeScore();
+      questions.forEach((_, idx) => markQuestion(idx));
+      scoreBox.style.display = 'block';
+      scoreBox.innerHTML = `<b>Final score:</b> ${liveScore} / ${questions.length}<br><b>Accuracy:</b> ${Math.round((liveScore / questions.length) * 100)}%`;
+      scoreBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function resetQuiz() {
+      document.getElementById('quizForm').reset();
+      document.querySelectorAll('.option').forEach(el => {
+        el.classList.remove('result-correct', 'result-wrong');
+      });
+      liveScore = 0;
+      scoreBox.style.display = 'none';
+      scoreBox.innerHTML = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    buildQuiz();
+  </script>
+</body>
+</html>
